@@ -1,0 +1,11 @@
+package com.example.newsapp.ui
+
+data class ViewError(
+    val message: String? = null,
+    val throwable: Throwable? = null,
+    val onTryAgainClickListener: OnTryAgainClickListener
+)
+
+fun interface OnTryAgainClickListener {
+    fun onTryAgainClick()
+}
