@@ -26,8 +26,19 @@ class CategoryAdapter(var items: List<CategoryDataClass>) :
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items.get(position)
+        val item = items[position]
         holder.bind(item)
+        onItemClickListener.let {
+            holder.viewBinding.layoutItem.setOnClickListener {
+                onItemClickListener?.onItemClick(position, item)
+            }
+        }
 
+    }
+
+    var onItemClickListener: OnItemClickListener? = null
+
+    fun interface OnItemClickListener {
+        fun onItemClick(position: Int, item: CategoryDataClass)
     }
 }

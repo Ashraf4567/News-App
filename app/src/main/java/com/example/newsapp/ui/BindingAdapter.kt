@@ -54,13 +54,15 @@ fun clickToLaunchUrl(view: View, url: String) {
         view.context.startActivity(intent)
     }
 
-    @BindingAdapter("backgroundColor")
-    fun changeCardViewBackground(cardView: CardView, color: Int) {
-        cardView.setCardBackgroundColor(ContextCompat.getColor(cardView.context, color))
-    }
 
-    @BindingAdapter("imageId")
-    fun loadImageByIdDrawable(imageView: ImageView, image: Int) {
-        imageView.setImageResource(image)
-    }
+}
+
+@BindingAdapter("backgroundColor")
+fun changeCardViewBackground(cardView: CardView, color: Int) {
+    cardView.setCardBackgroundColor(ContextCompat.getColor(cardView.context, color))
+}
+
+@BindingAdapter("imageId")
+fun loadImageByIdDrawable(imageView: ImageView, image: Int) {
+    imageView.setImageResource(image)
 }

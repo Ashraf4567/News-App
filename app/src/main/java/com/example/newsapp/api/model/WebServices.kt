@@ -10,7 +10,8 @@ interface WebServices {
 
     @GET("v2/top-headlines/sources")
     fun getSources(
-        @Query("apikey") key: String = ApiConstants.API_KEY
+        @Query("apikey") key: String = ApiConstants.API_KEY,
+        @Query("category") category: String
     ): Call<SourcesResponse>
 
 

@@ -30,6 +30,17 @@ class CategoriesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         var adapter = CategoryAdapter(CategoryDataClass.getCategoryList())
         viewBinding.categoryRecycler.adapter = adapter
+
+        adapter.onItemClickListener =
+            CategoryAdapter.OnItemClickListener { position, item ->
+                onCategoryClickListener?.onCategoryClick(item)
+            }
+    }
+
+    var onCategoryClickListener: OnCategoryClickListener? = null
+
+    interface OnCategoryClickListener {
+        fun onCategoryClick(category: CategoryDataClass)
     }
 
 }

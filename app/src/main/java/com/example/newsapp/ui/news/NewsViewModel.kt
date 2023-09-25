@@ -2,12 +2,14 @@ package com.example.newsapp.ui.news
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.newsapp.api.model.ApiConstants
 import com.example.newsapp.api.model.ApiManager
 import com.example.newsapp.api.model.newsResponse.News
 import com.example.newsapp.api.model.newsResponse.NewsResponse
 import com.example.newsapp.api.model.sourcesResponse.Source
 import com.example.newsapp.api.model.sourcesResponse.SourcesResponse
 import com.example.newsapp.ui.ViewError
+import com.example.newsapp.ui.categories.CategoryDataClass
 import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,11 +23,11 @@ class NewsViewModel : ViewModel() {
     val errorLiveData = MutableLiveData<ViewError>()
 
 
-    fun getNewsSources() {
+    fun getNewsSources(categoryDataClass: CategoryDataClass) {
         shouldShowLoading.postValue(true)
         // viewBinding.progressBar.isVisible = true
         ApiManager.getApis()
-            .getSources()
+            .getSources(ApiConstants.API_KEY, categoryDataClass.id)
             .enqueue(object : Callback<SourcesResponse> {
                 override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
                     shouldShowLoading.postValue(false)
@@ -33,7 +35,7 @@ class NewsViewModel : ViewModel() {
                         ViewError(
                             throwable = t
                         ) {
-                            getNewsSources()
+                            getNewsSources(categoryDataClass)
                         }
                     )
 //                    handleError(t, OnTryAgainClickListener {
@@ -57,7 +59,7 @@ class NewsViewModel : ViewModel() {
                             ViewError(
                                 message = response.message
                             ) {
-                                getNewsSources()
+                                getNewsSources(categoryDataClass)
                             }
                         )
                     }

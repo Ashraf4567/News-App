@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,23 +13,33 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.api.model.sourcesResponse.Source
 import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.ui.ViewError
+import com.example.newsapp.ui.categories.CategoryDataClass
 import com.example.newsapp.ui.home.newsDetails.NewsDetailsActivity
 import com.example.newsapp.ui.showMessage
 import com.google.android.material.tabs.TabLayout
 
 class NewsFragment : Fragment() {
 
-    lateinit var viewBinding: FragmentNewsBinding
+    private lateinit var viewBinding: FragmentNewsBinding
     lateinit var viewModel: NewsViewModel
     var pageSize = 20
     var currentPage = 1
     lateinit var sourceObj: Source
+    lateinit var category: CategoryDataClass
     var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this)[NewsViewModel::class.java]
 
+    }
+
+    companion object {
+        fun getInstance(category: CategoryDataClass): NewsFragment {
+            var newNewsFragment = NewsFragment()
+            newNewsFragment.category = category
+            return newNewsFragment
+        }
     }
 
     override fun onCreateView(
@@ -42,7 +53,7 @@ class NewsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.getNewsSources()
+        viewModel.getNewsSources(category)
         initObservers()
         initViews()
     }
@@ -78,10 +89,10 @@ class NewsFragment : Fragment() {
         viewBinding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                var layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                var lastVisibleItemCount = layoutManager.findLastVisibleItemPosition()
-                var totalItemCount = layoutManager.itemCount
-                var visibleThreshold = 3
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisibleItemCount = layoutManager.findLastVisibleItemPosition()
+                val totalItemCount = layoutManager.itemCount
+                val visibleThreshold = 3
 
                 if (isLoading && totalItemCount - lastVisibleItemCount <= visibleThreshold) {
                     isLoading = true
@@ -107,6 +118,10 @@ class NewsFragment : Fragment() {
             tap.text = source?.name
             tap.tag = source
             viewBinding.tapLayout.addTab(tap)
+            var layoutParams = LinearLayout.LayoutParams(tap.view.layoutParams)
+            layoutParams.marginEnd = 15
+            layoutParams.topMargin = 15
+            tap.view.layoutParams = layoutParams
 
         }
         viewBinding.tapLayout.addOnTabSelectedListener(
