@@ -18,7 +18,7 @@ class HomeActivity : AppCompatActivity(), CategoriesFragment.OnCategoryClickList
 
 
     private lateinit var viewBinding: ActivityHomeBinding
-    var categoriesFragment = CategoriesFragment()
+    private var categoriesFragment = CategoriesFragment()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityHomeBinding.inflate(layoutInflater)

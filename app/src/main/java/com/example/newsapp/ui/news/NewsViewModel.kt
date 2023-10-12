@@ -2,6 +2,7 @@ package com.example.newsapp.ui.news
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.newsapp.api.model.ApiConstants
 import com.example.newsapp.api.model.ApiManager
 import com.example.newsapp.api.model.newsResponse.News
@@ -11,9 +12,8 @@ import com.example.newsapp.api.model.sourcesResponse.SourcesResponse
 import com.example.newsapp.ui.ViewError
 import com.example.newsapp.ui.categories.CategoryDataClass
 import com.google.gson.Gson
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 class NewsViewModel : ViewModel() {
 
@@ -26,46 +26,36 @@ class NewsViewModel : ViewModel() {
     fun getNewsSources(categoryDataClass: CategoryDataClass) {
         shouldShowLoading.postValue(true)
         // viewBinding.progressBar.isVisible = true
-        ApiManager.getApis()
-            .getSources(ApiConstants.API_KEY, categoryDataClass.id)
-            .enqueue(object : Callback<SourcesResponse> {
-                override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
-                    shouldShowLoading.postValue(false)
-                    errorLiveData.postValue(
-                        ViewError(
-                            throwable = t
-                        ) {
-                            getNewsSources(categoryDataClass)
-                        }
-                    )
-//                    handleError(t, OnTryAgainClickListener {
-//                        getNewsSources()
-//                    })
+        viewModelScope.launch {
+            try {
+                val response =
+                    ApiManager.getApis().getSources(ApiConstants.API_KEY, categoryDataClass.id)
+                sourcesLiveData.postValue(response.sources)
 
-                }
-
-                override fun onResponse(
-                    call: Call<SourcesResponse>,
-                    response: Response<SourcesResponse>
-                ) {
-                    shouldShowLoading.postValue(false)
-                    if (response.isSuccessful) {
-                        sourcesLiveData.postValue(response.body()?.sources)
-                    } else {
-                        val errorBodyJsonString = response.errorBody()?.string()
-                        val response =
-                            Gson().fromJson(errorBodyJsonString, SourcesResponse::class.java)
-                        errorLiveData.postValue(
-                            ViewError(
-                                message = response.message
-                            ) {
-                                getNewsSources(categoryDataClass)
-                            }
-                        )
+            } catch (e: HttpException) {
+                val errorBodyJsonString = e.response()?.errorBody()?.string()
+                val response =
+                    Gson().fromJson(errorBodyJsonString, SourcesResponse::class.java)
+                errorLiveData.postValue(
+                    ViewError(
+                        message = response.message
+                    ) {
+                        getNewsSources(categoryDataClass)
                     }
-
-                }
-            })
+                )
+            } catch (e: Exception) {
+                shouldShowLoading.postValue(false)
+                errorLiveData.postValue(
+                    ViewError(
+                        throwable = e
+                    ) {
+                        getNewsSources(categoryDataClass)
+                    }
+                )
+            } finally {
+                shouldShowLoading.postValue(false)
+            }
+        }
     }
 
     fun getNews(
@@ -75,41 +65,38 @@ class NewsViewModel : ViewModel() {
     ) {
 
         shouldShowLoading.postValue(true)
-        ApiManager.getApis().getNews(sources = sourceId ?: "", pageSize = pageSize, page = page)
-            .enqueue(object : Callback<NewsResponse> {
-                override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
-                    shouldShowLoading.postValue(false)
-                    errorLiveData.postValue(
-                        ViewError(
-                            throwable = t
-                        ) {
-                            getNews(sourceId, pageSize = pageSize, page = page)
-                        }
-                    )
-                }
 
-                override fun onResponse(
-                    call: Call<NewsResponse>,
-                    response: Response<NewsResponse>
-                ) {
-                    shouldShowLoading.postValue(false)
-                    if (response.isSuccessful) {
-                        //show news
-                        newsLiveData.postValue(response.body()?.articles)
-                        return
+        viewModelScope.launch {
+            try {
+                val newsResponse = ApiManager.getApis()
+                    .getNews(sources = sourceId ?: "", pageSize = pageSize, page = page)
+                newsLiveData.postValue(newsResponse.articles)
+
+            } catch (ex: HttpException) {
+                val responseJsonError = ex.response()?.errorBody()?.string()
+                val errorResponse = Gson().fromJson(responseJsonError, NewsResponse::class.java)
+                errorLiveData.postValue(
+                    ViewError(
+                        message = errorResponse.message
+                    ) {
+                        getNews(sourceId, pageSize = pageSize, page = page)
                     }
-                    val responseJsonError = response.errorBody()?.string()
-                    val errorResponse = Gson().fromJson(responseJsonError, NewsResponse::class.java)
-                    errorLiveData.postValue(
-                        ViewError(
-                            message = errorResponse.message
-                        ) {
-                            getNews(sourceId, pageSize = pageSize, page = page)
-                        }
-                    )
-//
-                }
-            })
+                )
+            } catch (e: Exception) {
+
+                errorLiveData.postValue(
+                    ViewError(
+                        throwable = e
+                    ) {
+                        getNews(sourceId, pageSize = pageSize, page = page)
+                    }
+                )
+            } finally {
+                shouldShowLoading.postValue(false)
+
+            }
+        }
+
     }
 
 
