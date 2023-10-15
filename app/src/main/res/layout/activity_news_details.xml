@@ -7,7 +7,7 @@
 
         <variable
             name="newsData"
-            type="com.example.newsapp.api.model.newsResponse.News" />
+            type="com.data.api.model.newsResponse.News" />
 
     </data>
 

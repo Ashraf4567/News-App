@@ -1,4 +1,4 @@
-package com.example.newsapp.api.model
+package com.data.api.model
 
 class ApiConstants {
     companion object {

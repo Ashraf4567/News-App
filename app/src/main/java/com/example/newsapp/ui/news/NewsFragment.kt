@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.newsapp.api.model.sourcesResponse.Source
+import com.data.api.model.sourcesResponse.Source
 import com.example.newsapp.databinding.FragmentNewsBinding
 import com.example.newsapp.ui.ViewError
 import com.example.newsapp.ui.categories.CategoryDataClass

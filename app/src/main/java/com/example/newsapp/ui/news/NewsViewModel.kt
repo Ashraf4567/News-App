@@ -3,12 +3,19 @@ package com.example.newsapp.ui.news
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.newsapp.api.model.ApiConstants
-import com.example.newsapp.api.model.ApiManager
-import com.example.newsapp.api.model.newsResponse.News
-import com.example.newsapp.api.model.newsResponse.NewsResponse
-import com.example.newsapp.api.model.sourcesResponse.Source
-import com.example.newsapp.api.model.sourcesResponse.SourcesResponse
+import com.data.api.model.ApiManager
+import com.data.api.model.newsResponse.News
+import com.data.api.model.newsResponse.NewsResponse
+import com.data.api.model.sourcesResponse.Source
+import com.data.api.model.sourcesResponse.SourcesResponse
+import com.data.dataSource.NewsOnlineDataSourceImpl
+import com.data.dataSource.SourcesOnlineDataSourceImpl
+import com.data.repository.NewsRepositoryImpl
+import com.data.repository.SourcesRepositoryImpl
+import com.example.newsapp.dataSource.NewsDataSource
+import com.example.newsapp.dataSource.SourcesDataSource
+import com.example.newsapp.repository.SoursesRepository.SourcesRepository
+import com.example.newsapp.repository.news.NewsRepository
 import com.example.newsapp.ui.ViewError
 import com.example.newsapp.ui.categories.CategoryDataClass
 import com.google.gson.Gson
@@ -22,15 +29,24 @@ class NewsViewModel : ViewModel() {
     val newsLiveData = MutableLiveData<List<News?>?>()
     val errorLiveData = MutableLiveData<ViewError>()
 
+    val sourcesOnlineDataSource: SourcesDataSource = SourcesOnlineDataSourceImpl(
+        ApiManager.getApis(), categoryId = "health"
+    )
+    val sourcesRepo: SourcesRepository = SourcesRepositoryImpl(sourcesOnlineDataSource)
+
+    val newsDataSource: NewsDataSource = NewsOnlineDataSourceImpl(
+        ApiManager.getApis()
+    )
+    val newsRepository: NewsRepository = NewsRepositoryImpl(newsDataSource)
+
 
     fun getNewsSources(categoryDataClass: CategoryDataClass) {
         shouldShowLoading.postValue(true)
         // viewBinding.progressBar.isVisible = true
         viewModelScope.launch {
             try {
-                val response =
-                    ApiManager.getApis().getSources(ApiConstants.API_KEY, categoryDataClass.id)
-                sourcesLiveData.postValue(response.sources)
+                val sources = sourcesRepo.getSources(categoryDataClass.id)
+                sourcesLiveData.postValue(sources)
 
             } catch (e: HttpException) {
                 val errorBodyJsonString = e.response()?.errorBody()?.string()
@@ -68,9 +84,8 @@ class NewsViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val newsResponse = ApiManager.getApis()
-                    .getNews(sources = sourceId ?: "", pageSize = pageSize, page = page)
-                newsLiveData.postValue(newsResponse.articles)
+                val articles = newsRepository.getNews(sourceId ?: "")
+                newsLiveData.postValue(articles)
 
             } catch (ex: HttpException) {
                 val responseJsonError = ex.response()?.errorBody()?.string()

@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.newsapp.api.model.newsResponse.News
+import com.data.api.model.newsResponse.News
 import com.example.newsapp.databinding.ItemNewsBinding
 
 class NewsAdapter(var newsList: List<News?>? = null) :
